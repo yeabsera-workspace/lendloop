@@ -1,0 +1,37 @@
+{
+  "name": "LendLoop — Error handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "error-trigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst summary = {\n  workflow: err.workflow?.name || err.workflow?.id || 'unknown',\n  executionId: err.execution?.id,\n  lastNode: err.execution?.lastNodeExecuted,\n  message: err.execution?.error?.message || err.message || 'unknown error',\n  at: new Date().toISOString(),\n};\nconsole.error('[LendLoop n8n ERROR]', JSON.stringify(summary, null, 2));\n// Visible in n8n Executions UI; optionally forward to Slack/PagerDuty here.\nreturn [{ json: summary }];"
+      },
+      "id": "log-error",
+      "name": "Log visible error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [[{ "node": "Log visible error", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "1"
+}

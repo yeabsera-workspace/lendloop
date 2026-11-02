@@ -1,0 +1,30 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=UTC
+      # Shared HMAC secret — must match Convex N8N_WEBHOOK_SECRET
+      - LENDLOOP_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET:-change-me-in-production}
+      # Convex HTTP site URL, e.g. https://happy-animal-123.convex.site
+      - CONVEX_HTTP_URL=${CONVEX_HTTP_URL:-}
+      # Allow Code nodes to read $env.LENDLOOP_WEBHOOK_SECRET / CONVEX_HTTP_URL
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      # Legacy JS execution so require('crypto') works in Code nodes
+      - N8N_RUNNERS_ENABLED=false
+      - NODE_FUNCTION_ALLOW_BUILTIN=crypto
+      - N8N_LOG_LEVEL=info
+    extra_hosts:
+      # Linux: reach host Convex HTTP (3211) from the n8n container
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:
